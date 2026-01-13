@@ -5,12 +5,12 @@ http_response_code(200);
 // Hide errors from Telegram
 ini_set('display_errors', 0);
 error_reporting(0);
-
 /* ===============================
-   CONFIG
+   CONFIG (FROM RAILWAY ENV)
 ================================ */
-$BOT_TOKEN = "8208168301:AAGeYMb-HItoZ_6ldhaASFYq7rKqeEnqsgc";
-$OWNER_ID  = 8137930541;
+$BOT_TOKEN = getenv("8208168301:AAGeYMb-HItoZ_6ldhaASFYq7rKqeEnqsgc");
+$OWNER_ID  = getenv("8137930541");
+
 
 /* ===============================
    READ UPDATE
@@ -49,15 +49,15 @@ if ($chat_id != $OWNER_ID) {
 }
 
 /* ===============================
-   DATABASE (UPDATE LATER)
+   DATABASE (FROM RAILWAY ENV)
 ================================ */
-// TEMP: comment DB until webhook is stable
 $conn = @mysqli_connect(
-  "sql211.infinityfree.com",
-  "if0_40717053",
-  "ASOYennB4G",
-  "if0_40717053_122"
+    getenv("sql211.infinityfree.com"),
+    getenv("if0_40717053"),
+    getenv("ASOYennB4G"),
+    getenv("if0_40717053_122")
 );
+
 
 /* ===============================
    COMMANDS
