@@ -8,9 +8,8 @@ error_reporting(0);
 /* ===============================
    CONFIG (FROM RAILWAY ENV)
 ================================ */
-$BOT_TOKEN = getenv("8208168301:AAGeYMb-HItoZ_6ldhaASFYq7rKqeEnqsgc");
-$OWNER_ID  = getenv("8137930541");
-
+$BOT_TOKEN = getenv("BOT_TOKEN");
+$OWNER_ID  = intval(getenv("OWNER_ID"));
 
 /* ===============================
    READ UPDATE
@@ -52,10 +51,10 @@ if ($chat_id != $OWNER_ID) {
    DATABASE (FROM RAILWAY ENV)
 ================================ */
 $conn = @mysqli_connect(
-    getenv("sql211.infinityfree.com"),
-    getenv("if0_40717053"),
-    getenv("ASOYennB4G"),
-    getenv("if0_40717053_122")
+    getenv("DB_HOST"),
+    getenv("DB_USER"),
+    getenv("DB_PASS"),
+    getenv("DB_NAME")
 );
 
 
