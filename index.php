@@ -1,32 +1,36 @@
 <?php
 http_response_code(200);
-ini_set('display_errors', 0);
 error_reporting(0);
 
 /* CONFIG */
 $BOT_TOKEN = getenv("BOT_TOKEN");
-$OWNER_ID  = getenv("OWNER_ID");
+$OWNER_ID  = (string)getenv("OWNER_ID");
 
 /* READ UPDATE */
 $update = json_decode(file_get_contents("php://input"), true);
-$message = $update["message"] ?? null;
+
+$message = $update["message"]
+        ?? $update["edited_message"]
+        ?? null;
+
 if (!$message) {
     echo "OK";
     exit;
 }
 
-$chat_id = $update["message"]["chat"]["id"] ?? 0;
-$text = trim($message["text"] ?? "");
+$chat_id = (string)($message["chat"]["id"] ?? "");
+$text    = trim($message["text"] ?? "");
 
-/* OWNER ONLY */
-if ((string)$chat_id !== (string)$OWNER_ID) {
+/* OWNER CHECK */
+if ($chat_id !== $OWNER_ID) {
     sendMessage($chat_id, "❌ Unauthorized");
     echo "OK";
     exit;
 }
 
+/* CONFIRM OWNER (you can remove later) */
 if ($text === "") {
-    sendMessage($chat_id, "⚠️ Empty message received");
+    sendMessage($chat_id, "⚠️ Owner message without text");
     echo "OK";
     exit;
 }
@@ -43,7 +47,6 @@ $conn = @mysqli_connect(
 if (strpos($text, "/start") === 0) {
     sendMessage($chat_id, "✅ TaskMint Bot Connected\nUse /stats");
 }
-
 elseif (strpos($text, "/stats") === 0) {
     if (!$conn) {
         sendMessage($chat_id, "❌ Database connection failed");
@@ -66,10 +69,10 @@ echo "OK";
 function sendMessage($chat_id, $text) {
     global $BOT_TOKEN;
     file_get_contents(
-        "https://api.telegram.org/bot$BOT_TOKEN/sendMessage?" .
+        "https://api.telegram.org/bot{$BOT_TOKEN}/sendMessage?" .
         http_build_query([
             "chat_id" => $chat_id,
-            "text" => $text
+            "text"    => $text
         ])
     );
 }
