@@ -5,26 +5,16 @@ error_reporting(0);
 
 /* CONFIG */
 $BOT_TOKEN = getenv("BOT_TOKEN");
-$OWNER_ID  = trim(getenv("OWNER_ID"));
 
 /* READ UPDATE */
-$raw = file_get_contents("php://input");
-$update = json_decode($raw, true);
-
+$update = json_decode(file_get_contents("php://input"), true);
 if (!$update || !isset($update["message"])) {
     echo "OK";
     exit;
 }
 
-$chat_id = (string)($update["message"]["chat"]["id"] ?? "");
+$chat_id = $update["message"]["chat"]["id"] ?? 0;
 $text    = trim($update["message"]["text"] ?? "");
-
-/* OWNER CHECK */
-if ($chat_id !== (string)$OWNER_ID) {
-    sendMessage($chat_id, "❌ Unauthorized");
-    echo "OK";
-    exit;
-}
 
 /* DATABASE */
 $conn = @mysqli_connect(
@@ -36,22 +26,23 @@ $conn = @mysqli_connect(
 
 /* COMMANDS */
 if ($text === "/start") {
-    sendMessage($chat_id, "✅ TaskMint Bot Connected\nUse /stats");
+    sendMessage($chat_id, "✅ TaskMint Bot is LIVE\nTesting mode enabled");
 }
 
 elseif ($text === "/stats") {
+
     if (!$conn) {
         sendMessage($chat_id, "❌ Database connection failed");
         echo "OK";
         exit;
     }
 
-    $u = mysqli_fetch_assoc(mysqli_query($conn,"SELECT COUNT(*) total FROM users"))["total"] ?? 0;
-    $b = mysqli_fetch_assoc(mysqli_query($conn,"SELECT SUM(balance) total FROM users"))["total"] ?? 0;
+    $u = mysqli_fetch_assoc(mysqli_query($conn,"SELECT COUNT(*) total FROM users"));
+    $b = mysqli_fetch_assoc(mysqli_query($conn,"SELECT SUM(balance) total FROM users"));
 
     sendMessage(
         $chat_id,
-        "📊 TaskMint Stats\n👥 Users: $u\n💰 Balance: ₹$b"
+        "📊 TaskMint Stats\n👥 Users: {$u['total']}\n💰 Balance: ₹{$b['total']}"
     );
 }
 
@@ -59,9 +50,9 @@ echo "OK";
 
 /* SEND MESSAGE */
 function sendMessage($chat_id, $text) {
-    $token = getenv("BOT_TOKEN");
+    global $BOT_TOKEN;
     file_get_contents(
-        "https://api.telegram.org/bot$token/sendMessage?" .
+        "https://api.telegram.org/bot$BOT_TOKEN/sendMessage?" .
         http_build_query([
             "chat_id" => $chat_id,
             "text" => $text
