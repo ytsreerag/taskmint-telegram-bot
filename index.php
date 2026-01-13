@@ -19,7 +19,7 @@ $text    = trim($update["message"]["text"] ?? "");
 
 /* OWNER ONLY */
 if ((string)$chat_id !== (string)$OWNER_ID) {
-    sendMessage($chat_id, "❌ Unauthorized");
+    sendMessage($chat_id, "❌ Unauthorizeded");
     echo "OK";
     exit;
 }
@@ -33,11 +33,11 @@ $conn = @mysqli_connect(
 );
 
 /* COMMANDS */
-if ($text === "/start") {
+if (strpos($text, "/start") === 0) {
     sendMessage($chat_id, "✅ TaskMint Bot Connected\nUse /stats");
 }
 
-elseif ($text === "/stats") {
+elseif (strpos($text, "/stats") === 0) {
     if (!$conn) {
         sendMessage($chat_id, "❌ Database connection failed");
         echo "OK";
