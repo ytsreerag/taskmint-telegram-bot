@@ -5,7 +5,7 @@ error_reporting(0);
 
 /* CONFIG */
 $BOT_TOKEN = getenv("BOT_TOKEN");
-$OWNER_ID  = intval(getenv("OWNER_ID"));
+$OWNER_ID  = getenv("OWNER_ID");
 
 /* READ UPDATE */
 $update = json_decode(file_get_contents("php://input"), true);
@@ -18,9 +18,11 @@ $chat_id = $update["message"]["chat"]["id"] ?? 0;
 $text    = trim($update["message"]["text"] ?? "");
 
 /* OWNER ONLY */
-sendMessage($chat_id, "chat_id=$chat_id | owner=" . getenv("OWNER_ID"));
-echo "OK";
-exit;
+if ((string)$chat_id !== (string)$OWNER_ID) {
+    sendMessage($chat_id, "❌ Unauthorized");
+    echo "OK";
+    exit;
+}
 
 /* DATABASE */
 $conn = @mysqli_connect(
@@ -35,7 +37,7 @@ if ($text === "/start") {
     sendMessage($chat_id, "✅ TaskMint Bot Connected\nUse /stats");
 }
 
-if ($text === "/stats") {
+elseif ($text === "/stats") {
     if (!$conn) {
         sendMessage($chat_id, "❌ Database connection failed");
         echo "OK";
@@ -58,6 +60,9 @@ function sendMessage($chat_id, $text) {
     global $BOT_TOKEN;
     file_get_contents(
         "https://api.telegram.org/bot$BOT_TOKEN/sendMessage?" .
-        http_build_query(["chat_id"=>$chat_id,"text"=>$text])
+        http_build_query([
+            "chat_id" => $chat_id,
+            "text" => $text
+        ])
     );
 }
