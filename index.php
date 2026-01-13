@@ -18,7 +18,7 @@ $chat_id = $update["message"]["chat"]["id"] ?? 0;
 $text    = trim($update["message"]["text"] ?? "");
 
 /* OWNER ONLY */
-if ($chat_id !== $OWNER_ID) {
+if ((string)$chat_id !== (string)$OWNER_ID) {
     sendMessage($chat_id, "❌ Unauthorized");
     echo "OK";
     exit;
