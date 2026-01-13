@@ -18,11 +18,9 @@ $chat_id = $update["message"]["chat"]["id"] ?? 0;
 $text    = trim($update["message"]["text"] ?? "");
 
 /* OWNER ONLY */
-if ((string)$chat_id !== (string)$OWNER_ID) {
-    sendMessage($chat_id, "❌ Unauthorized");
-    echo "OK";
-    exit;
-}
+sendMessage($chat_id, "chat_id=$chat_id | owner=" . getenv("OWNER_ID"));
+echo "OK";
+exit;
 
 /* DATABASE */
 $conn = @mysqli_connect(
