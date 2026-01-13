@@ -53,10 +53,10 @@ if ($chat_id != $OWNER_ID) {
 ================================ */
 // TEMP: comment DB until webhook is stable
 $conn = @mysqli_connect(
-  "sqlXXX.infinityfree.com",
-  "if0_xxxxx",
-  "PASSWORD",
-  "if0_xxxxx_taskmint"
+  "sql211.infinityfree.com",
+  "if0_40717053",
+  "ASOYennB4G",
+  "if0_40717053_122"
 );
 
 /* ===============================
