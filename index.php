@@ -9,17 +9,24 @@ $OWNER_ID  = getenv("OWNER_ID");
 
 /* READ UPDATE */
 $update = json_decode(file_get_contents("php://input"), true);
-if (!$update || !isset($update["message"])) {
+$message = $update["message"] ?? null;
+if (!$message) {
     echo "OK";
     exit;
 }
 
 $chat_id = $update["message"]["chat"]["id"] ?? 0;
-$text    = trim($update["message"]["text"] ?? "");
+$text = trim($message["text"] ?? "");
 
 /* OWNER ONLY */
 if ((string)$chat_id !== (string)$OWNER_ID) {
-    sendMessage($chat_id, "❌ Unauthorizeded");
+    sendMessage($chat_id, "❌ Unauthorized");
+    echo "OK";
+    exit;
+}
+
+if ($text === "") {
+    sendMessage($chat_id, "⚠️ Empty message received");
     echo "OK";
     exit;
 }
