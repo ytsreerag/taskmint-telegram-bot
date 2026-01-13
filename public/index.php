@@ -1,30 +1,15 @@
 <?php
-// ALWAYS return 200 OK
 http_response_code(200);
-
-// Hide errors from Telegram
 ini_set('display_errors', 0);
 error_reporting(0);
-/* ===============================
-   CONFIG (FROM RAILWAY ENV)
-================================ */
+
+/* CONFIG */
 $BOT_TOKEN = getenv("BOT_TOKEN");
 $OWNER_ID  = intval(getenv("OWNER_ID"));
 
-/* ===============================
-   READ UPDATE
-================================ */
-$raw = file_get_contents("php://input");
-$update = json_decode($raw, true);
-
-// If Telegram ping or empty update → reply OK
-if (!$update) {
-    echo "OK";
-    exit;
-}
-
-// Accept ONLY normal messages
-if (!isset($update["message"])) {
+/* READ UPDATE */
+$update = json_decode(file_get_contents("php://input"), true);
+if (!$update || !isset($update["message"])) {
     echo "OK";
     exit;
 }
@@ -32,24 +17,14 @@ if (!isset($update["message"])) {
 $chat_id = $update["message"]["chat"]["id"] ?? 0;
 $text    = trim($update["message"]["text"] ?? "");
 
-// If no text (stickers, photos etc)
-if ($text === "") {
-    echo "OK";
-    exit;
-}
-
-/* ===============================
-   OWNER ONLY
-================================ */
-if ($chat_id != $OWNER_ID) {
+/* OWNER ONLY */
+if ($chat_id !== $OWNER_ID) {
     sendMessage($chat_id, "❌ Unauthorized");
     echo "OK";
     exit;
 }
 
-/* ===============================
-   DATABASE (FROM RAILWAY ENV)
-================================ */
+/* DATABASE */
 $conn = @mysqli_connect(
     getenv("DB_HOST"),
     getenv("DB_USER"),
@@ -57,51 +32,34 @@ $conn = @mysqli_connect(
     getenv("DB_NAME")
 );
 
-
-/* ===============================
-   COMMANDS
-================================ */
+/* COMMANDS */
 if ($text === "/start") {
+    sendMessage($chat_id, "✅ TaskMint Bot Connected\nUse /stats");
+}
 
-    sendMessage(
-        $chat_id,
-        "✅ TaskMint Bot Connected\n\nUse /stats"
-    );
-
-} elseif ($text === "/stats") {
-
+if ($text === "/stats") {
     if (!$conn) {
-        sendMessage($chat_id, "⚠️ Database not connected yet");
+        sendMessage($chat_id, "❌ Database connection failed");
         echo "OK";
         exit;
     }
 
-    $users = mysqli_fetch_assoc(
-        mysqli_query($conn, "SELECT COUNT(*) total FROM users")
-    )["total"] ?? 0;
-
-    $balance = mysqli_fetch_assoc(
-        mysqli_query($conn, "SELECT SUM(balance) total FROM users")
-    )["total"] ?? 0;
+    $u = mysqli_fetch_assoc(mysqli_query($conn,"SELECT COUNT(*) total FROM users"));
+    $b = mysqli_fetch_assoc(mysqli_query($conn,"SELECT SUM(balance) total FROM users"));
 
     sendMessage(
         $chat_id,
-        "📊 TaskMint Stats\n\n👥 Users: $users\n💰 Balance: ₹$balance"
+        "📊 TaskMint Stats\n👥 Users: {$u['total']}\n💰 Balance: ₹{$b['total']}"
     );
 }
 
 echo "OK";
 
-/* ===============================
-   SEND MESSAGE
-================================ */
-function sendMessage($chat_id, $message) {
+/* SEND MESSAGE */
+function sendMessage($chat_id, $text) {
     global $BOT_TOKEN;
-    @file_get_contents(
+    file_get_contents(
         "https://api.telegram.org/bot$BOT_TOKEN/sendMessage?" .
-        http_build_query([
-            "chat_id" => $chat_id,
-            "text" => $message
-        ])
+        http_build_query(["chat_id"=>$chat_id,"text"=>$text])
     );
 }
